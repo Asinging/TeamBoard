@@ -1,0 +1,69 @@
+services:
+  # ─── MongoDB ────────────────────────────────────────────────────────────────
+  mongo:
+    image: mongo:7
+    container_name: teamboard-mongo
+    restart: unless-stopped
+    ports:
+      - '27017:27017'
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - teamboard_net
+    healthcheck:
+      test: ['CMD', 'mongosh', '--eval', 'db.adminCommand("ping")']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── NestJS API ─────────────────────────────────────────────────────────────
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    container_name: teamboard-api
+    restart: unless-stopped
+    ports:
+      - '3000:3000'
+    environment:
+      PORT: 3000
+      MONGODB_URI: mongodb://mongo:27017/teamboard
+      JWT_SECRET: ${JWT_SECRET:-teamboard-dev-secret}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+      FRONTEND_URL: http://localhost:5173
+      ADMIN_NAME: ${ADMIN_NAME:-Super Admin}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@teamboard.dev}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-Admin@1234}
+    volumes:
+      # Mount source for hot-reload 
+      - ./backend:/app
+      - /app/node_modules
+    depends_on:
+      mongo:
+        condition: service_healthy
+    networks:
+      - teamboard_net
+
+  # ─── React Frontend ──────────────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: teamboard-frontend
+    restart: unless-stopped
+    ports:
+      - '5173:5173'
+    environment:
+      VITE_API_URL: http://localhost:3000/api
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    networks:
+      - teamboard_net
+
+volumes:
+  mongo_data:
+
+networks:
+  teamboard_net:
+    driver: bridge
