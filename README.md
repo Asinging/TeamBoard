@@ -258,3 +258,7 @@ cd backend
 npm test              # unit tests
 npm run test:cov      # coverage report
 ```
+## DEMO ACCOUNT
+ADMIN_NAME=Super Admin
+ADMIN_EMAIL=admin@teamboard.dev
+ADMIN_PASSWORD=Admin@1234

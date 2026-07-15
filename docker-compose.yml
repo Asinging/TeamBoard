@@ -27,7 +27,7 @@ services:
       - '3000:3000'
     environment:
       PORT: 3000
-      MONGODB_URI: mongodb://mongo:27017/teamboard
+      MONGODB_URI: ${MONGODB_URI:-mongodb://mongo:27017/teamboard}
       JWT_SECRET: ${JWT_SECRET:-teamboard-dev-secret}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
       FRONTEND_URL: http://localhost:5173
