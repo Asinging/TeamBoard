@@ -31,6 +31,7 @@ export class TeamsService {
     return this.teamModel
       .find({ members: new Types.ObjectId(userId) })
       .populate('owner', 'name email')
+      .populate('members', 'name email')
       .sort({ createdAt: -1 })
       .exec();
   }
